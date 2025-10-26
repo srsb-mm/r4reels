@@ -95,7 +95,7 @@ const Home = () => {
   };
 
   const handleStoryClick = (userId: string) => {
-    navigate(`/stories/${userId}`);
+    navigate(`/user/${userId}`);
   };
 
   if (loading || !user) {

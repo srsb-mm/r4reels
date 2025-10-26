@@ -10,6 +10,10 @@ import Create from "./pages/Create";
 import Messages from "./pages/Messages";
 import Explore from "./pages/Explore";
 import Activity from "./pages/Activity";
+import Reels from "./pages/Reels";
+import Search from "./pages/Search";
+import PostDetail from "./pages/PostDetail";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +32,10 @@ const App = () => (
           <Route path="/messages" element={<Messages />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/activity" element={<Activity />} />
+          <Route path="/reels" element={<Reels />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/user/:username" element={<UserProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

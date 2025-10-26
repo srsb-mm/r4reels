@@ -177,6 +177,7 @@ export type Database = {
           id: string
           image_url: string
           location: string | null
+          post_type: string | null
           user_id: string
         }
         Insert: {
@@ -185,6 +186,7 @@ export type Database = {
           id?: string
           image_url: string
           location?: string | null
+          post_type?: string | null
           user_id: string
         }
         Update: {
@@ -193,6 +195,7 @@ export type Database = {
           id?: string
           image_url?: string
           location?: string | null
+          post_type?: string | null
           user_id?: string
         }
         Relationships: [

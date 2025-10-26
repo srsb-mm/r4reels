@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlusSquare, Heart, MessageCircle, User } from 'lucide-react';
+import { Home, Search, PlusSquare, Heart, MessageCircle, User, Film } from 'lucide-react';
 import logo from '@/assets/r4-logo.png';
 
 interface LayoutProps {
@@ -12,10 +12,10 @@ const Layout = ({ children }: LayoutProps) => {
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Search', path: '/explore' },
+    { icon: Search, label: 'Search', path: '/search' },
+    { icon: Film, label: 'Reels', path: '/reels' },
     { icon: PlusSquare, label: 'Create', path: '/create' },
     { icon: Heart, label: 'Activity', path: '/activity' },
-    { icon: MessageCircle, label: 'Messages', path: '/messages' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
@@ -29,7 +29,7 @@ const Layout = ({ children }: LayoutProps) => {
             <span className="text-xl font-semibold">R4 Reels</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
+            {navItems.slice(0, -1).map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -42,6 +42,26 @@ const Layout = ({ children }: LayoutProps) => {
                 <item.icon className="h-6 w-6" />
               </Link>
             ))}
+            <Link
+              to="/messages"
+              className={`flex items-center gap-2 transition-colors ${
+                location.pathname === '/messages'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Link>
+            <Link
+              to="/profile"
+              className={`flex items-center gap-2 transition-colors ${
+                location.pathname === '/profile'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <User className="h-6 w-6" />
+            </Link>
           </nav>
         </div>
       </header>
