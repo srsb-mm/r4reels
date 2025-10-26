@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 interface PostProps {
   post: {
@@ -27,11 +28,32 @@ interface PostProps {
 const Post = ({ post, onLike, onComment }: PostProps) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likesCount, setLikesCount] = useState(post.likes_count);
+  const { toast } = useToast();
 
   const handleLike = () => {
     setLiked(!liked);
     setLikesCount(liked ? likesCount - 1 : likesCount + 1);
     onLike(post.id);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'R4 Reels Post',
+          text: post.caption || 'Check out this post!',
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: 'Link Copied',
+        description: 'Post link copied to clipboard',
+      });
+    }
   };
 
   return (
@@ -72,8 +94,8 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
             <Button variant="ghost" size="icon" onClick={() => onComment(post.id)}>
               <MessageCircle className="h-6 w-6" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <Send className="h-6 w-6" />
+            <Button variant="ghost" size="icon" onClick={handleShare}>
+              <Share2 className="h-6 w-6" />
             </Button>
           </div>
           <Button variant="ghost" size="icon">

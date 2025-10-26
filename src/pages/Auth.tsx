@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Instagram } from 'lucide-react';
+import logo from '@/assets/r4-logo.png';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -18,10 +18,11 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +60,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-8">
-          <Instagram className="h-12 w-12 mb-4" />
-          <h1 className="text-2xl font-bold">Instagram</h1>
+          <img src={logo} alt="R4 Reels" className="h-20 w-20 mb-4" />
+          <h1 className="text-2xl font-bold">R4 Reels</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
