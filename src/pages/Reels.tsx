@@ -55,20 +55,50 @@ const Reels = () => {
   }, [currentIndex]);
 
   const fetchReels = async () => {
-    const { data } = await supabase
+    const { data: reelsData } = await supabase
       .from('posts')
       .select(`
         *,
-        profiles:user_id (username, avatar_url),
-        likes:likes(count),
-        comments:comments(count),
-        user_liked:likes!inner(user_id)
+        profiles:user_id (username, avatar_url)
       `)
       .eq('post_type', 'reel')
-      .eq('user_liked.user_id', user?.id || '')
       .order('created_at', { ascending: false });
 
-    setReels(data || []);
+    if (!reelsData) {
+      setReels([]);
+      return;
+    }
+
+    // Fetch likes and comments count separately
+    const reelsWithData = await Promise.all(
+      reelsData.map(async (reel) => {
+        const { count: likesCount } = await supabase
+          .from('likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', reel.id);
+
+        const { count: commentsCount } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', reel.id);
+
+        const { data: userLiked } = await supabase
+          .from('likes')
+          .select('id')
+          .eq('post_id', reel.id)
+          .eq('user_id', user?.id || '')
+          .maybeSingle();
+
+        return {
+          ...reel,
+          likes: [{ count: likesCount || 0 }],
+          comments: [{ count: commentsCount || 0 }],
+          user_liked: userLiked ? [userLiked] : []
+        };
+      })
+    );
+
+    setReels(reelsWithData);
   };
 
   const handleLike = async (reel: any, index: number) => {
@@ -135,6 +165,10 @@ const Reels = () => {
                 loop
                 muted={muted}
                 playsInline
+                onError={(e) => {
+                  console.error('Video load error:', e);
+                  console.error('Video URL:', reel.image_url);
+                }}
               />
 
               {/* Overlay */}
