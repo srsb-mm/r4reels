@@ -165,13 +165,22 @@ const PostDetail = () => {
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-lg overflow-hidden border">
           <div className="grid md:grid-cols-2">
-            {/* Image Section */}
+            {/* Media Section */}
             <div className="bg-black flex items-center justify-center">
-              <img
-                src={post.image_url}
-                alt={post.caption || 'Post'}
-                className="w-full h-auto max-h-[600px] object-contain"
-              />
+              {post.post_type === 'reel' ? (
+                <video
+                  src={post.image_url}
+                  className="w-full h-auto max-h-[600px] object-contain"
+                  controls
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={post.image_url}
+                  alt={post.caption || 'Post'}
+                  className="w-full h-auto max-h-[600px] object-contain"
+                />
+              )}
             </div>
 
             {/* Details Section */}

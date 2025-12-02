@@ -14,6 +14,7 @@ interface PostProps {
     caption?: string;
     location?: string;
     created_at: string;
+    post_type?: string;
     profiles: {
       username: string;
       avatar_url?: string;
@@ -77,14 +78,29 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
         </button>
       </div>
 
-      {/* Image */}
-      <img 
-        src={post.image_url} 
-        alt={post.caption || 'Post'} 
-        className="w-full cursor-pointer" 
-        onDoubleClick={handleLike}
-        onClick={() => navigate(`/post/${post.id}`)}
-      />
+      {/* Media */}
+      {post.post_type === 'reel' ? (
+        <video 
+          src={post.image_url} 
+          className="w-full cursor-pointer" 
+          controls
+          playsInline
+          onDoubleClick={handleLike}
+          onClick={(e) => {
+            if ((e.target as HTMLVideoElement).paused) {
+              navigate(`/post/${post.id}`);
+            }
+          }}
+        />
+      ) : (
+        <img 
+          src={post.image_url} 
+          alt={post.caption || 'Post'} 
+          className="w-full cursor-pointer" 
+          onDoubleClick={handleLike}
+          onClick={() => navigate(`/post/${post.id}`)}
+        />
+      )}
 
       {/* Actions */}
       <div className="p-4">
