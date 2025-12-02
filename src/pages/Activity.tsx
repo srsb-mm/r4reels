@@ -16,29 +16,44 @@ const Activity = () => {
   }, [user]);
 
   const fetchActivities = async () => {
-    const { data: likes } = await supabase
+    // Get user's posts first
+    const { data: userPosts } = await supabase
+      .from('posts')
+      .select('id')
+      .eq('user_id', user?.id);
+
+    const postIds = userPosts?.map(p => p.id) || [];
+
+    // Get likes on user's posts
+    const { data: likes } = postIds.length > 0 ? await supabase
       .from('likes')
       .select(`
         created_at,
+        post_id,
         profiles:user_id (username, avatar_url),
         posts:post_id (id, image_url)
       `)
-      .eq('posts.user_id', user?.id)
+      .in('post_id', postIds)
+      .neq('user_id', user?.id)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(20) : { data: [] };
 
-    const { data: comments } = await supabase
+    // Get comments on user's posts
+    const { data: comments } = postIds.length > 0 ? await supabase
       .from('comments')
       .select(`
         created_at,
         text,
+        post_id,
         profiles:user_id (username, avatar_url),
         posts:post_id (id, image_url)
       `)
-      .eq('posts.user_id', user?.id)
+      .in('post_id', postIds)
+      .neq('user_id', user?.id)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(20) : { data: [] };
 
+    // Get new followers
     const { data: follows } = await supabase
       .from('follows')
       .select(`

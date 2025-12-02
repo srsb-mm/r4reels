@@ -19,9 +19,12 @@ interface PostProps {
       username: string;
       avatar_url?: string;
     };
-    likes: any[];
-    comments: any[];
+    likes?: any[];
+    likes_count?: number;
+    comments?: any[];
+    comments_count?: number;
     user_liked?: any[];
+    is_liked?: boolean;
   };
   onLike: (postId: string) => void;
   onComment: (postId: string) => void;
@@ -29,8 +32,9 @@ interface PostProps {
 
 const Post = ({ post, onLike, onComment }: PostProps) => {
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useState(post.user_liked?.length > 0);
-  const [likeCount, setLikeCount] = useState(post.likes[0]?.count || 0);
+  // Support both is_liked (from Home) and user_liked (from other places)
+  const [isLiked, setIsLiked] = useState(post.is_liked || post.user_liked?.length > 0);
+  const [likeCount, setLikeCount] = useState(post.likes_count || post.likes?.[0]?.count || 0);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -52,7 +56,7 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
     }
   };
 
-  const commentCount = post.comments[0]?.count || 0;
+  const commentCount = post.comments_count || post.comments?.[0]?.count || 0;
 
   return (
     <div className="mb-6 border rounded-lg overflow-hidden bg-card">
