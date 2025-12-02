@@ -38,7 +38,7 @@ const Profile = () => {
       .from('profiles')
       .select('*')
       .eq('id', user?.id)
-      .single();
+      .maybeSingle();
 
     setProfile(data);
   };
@@ -105,7 +105,17 @@ const Profile = () => {
     setShowFollowing(true);
   };
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto text-center py-20">
+          <h2 className="text-xl font-semibold mb-4">Profile not found</h2>
+          <p className="text-muted-foreground mb-4">Please log out and log in again to create your profile.</p>
+          <Button onClick={handleSignOut}>Log Out</Button>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
