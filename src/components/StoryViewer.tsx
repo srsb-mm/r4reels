@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Story {
   id: string;
@@ -24,10 +25,60 @@ interface StoryViewerProps {
 }
 
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: StoryViewerProps) => {
+  const { user } = useAuth();
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const story = stories[currentIndex];
-  const STORY_DURATION = 5000; // 5 seconds
+  const STORY_DURATION = 5000;
+
+  useEffect(() => {
+    if (story && user) {
+      checkIfLiked();
+      fetchLikeCount();
+    }
+  }, [story?.id, user]);
+
+  const checkIfLiked = async () => {
+    if (!story || !user) return;
+    const { data } = await supabase
+      .from('story_likes')
+      .select('id')
+      .eq('story_id', story.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    setIsLiked(!!data);
+  };
+
+  const fetchLikeCount = async () => {
+    if (!story) return;
+    const { count } = await supabase
+      .from('story_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('story_id', story.id);
+    setLikeCount(count || 0);
+  };
+
+  const handleLike = async () => {
+    if (!story || !user) return;
+    
+    if (isLiked) {
+      await supabase
+        .from('story_likes')
+        .delete()
+        .eq('story_id', story.id)
+        .eq('user_id', user.id);
+      setIsLiked(false);
+      setLikeCount(prev => prev - 1);
+    } else {
+      await supabase
+        .from('story_likes')
+        .insert({ story_id: story.id, user_id: user.id });
+      setIsLiked(true);
+      setLikeCount(prev => prev + 1);
+    }
+  };
 
   useEffect(() => {
     if (isPaused) return;
@@ -126,6 +177,23 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
             onClick={onNext}
           />
         </div>
+      </div>
+
+      {/* Like Button */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+        <button
+          onClick={handleLike}
+          className="p-3 rounded-full bg-muted/50 hover:bg-muted transition-colors"
+        >
+          <Heart
+            className={`h-8 w-8 transition-colors ${
+              isLiked ? 'fill-red-500 text-red-500' : 'text-foreground'
+            }`}
+          />
+        </button>
+        {likeCount > 0 && (
+          <span className="text-sm text-foreground font-medium">{likeCount}</span>
+        )}
       </div>
 
       {/* Navigation Buttons */}
