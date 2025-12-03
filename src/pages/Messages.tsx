@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
@@ -11,10 +12,37 @@ import { formatDistanceToNow } from 'date-fns';
 
 const Messages = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+    }
+  }, [user]);
+
+  // Handle user query param to open specific conversation
+  useEffect(() => {
+    const targetUserId = searchParams.get('user');
+    if (targetUserId && user) {
+      fetchUserAndOpenChat(targetUserId);
+    }
+  }, [searchParams, user]);
+
+  const fetchUserAndOpenChat = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (data) {
+      setSelectedUser(data);
+    }
+  };
 
   useEffect(() => {
     if (user) {

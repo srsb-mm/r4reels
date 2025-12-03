@@ -6,7 +6,7 @@ import Layout from '@/components/Layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Grid, Bookmark, User as UserIcon } from 'lucide-react';
+import { Grid, Bookmark, User as UserIcon, Settings, Edit } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -130,10 +130,14 @@ const Profile = () => {
           </Avatar>
 
           <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4 mb-4 flex-wrap">
               <h1 className="text-2xl font-light">{profile.username}</h1>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                Log Out
+              <Button variant="outline" size="sm" onClick={() => navigate('/profile/edit')}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
 

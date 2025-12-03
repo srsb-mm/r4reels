@@ -6,7 +6,7 @@ import Layout from '@/components/Layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Grid, User } from 'lucide-react';
+import { Grid, User, MessageCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -169,9 +169,15 @@ const UserProfile = () => {
                     View My Profile
                   </Button>
                 ) : (
-                  <Button onClick={handleFollow} variant={isFollowing ? 'outline' : 'default'}>
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={handleFollow} variant={isFollowing ? 'outline' : 'default'}>
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate(`/messages?user=${profile.id}`)}>
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Message
+                    </Button>
+                  </div>
                 )}
               </div>
               

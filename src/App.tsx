@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
+import Settings from "./pages/Settings";
 import Create from "./pages/Create";
 import Messages from "./pages/Messages";
 import Explore from "./pages/Explore";
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/create" element={<Create />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/explore" element={<Explore />} />
