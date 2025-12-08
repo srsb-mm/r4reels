@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,14 +24,66 @@ interface StoryViewerProps {
   onPrevious: () => void;
 }
 
+// Ad component for stories
+const StoryAd = ({ onComplete }: { onComplete: () => void }) => {
+  const adRef = useRef<HTMLDivElement>(null);
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    // Load native ad
+    if (adRef.current) {
+      const script = document.createElement('script');
+      script.async = true;
+      script.setAttribute('data-cfasync', 'false');
+      script.src = '//pl28214886.effectivegatecpm.com/0f7e60b368e48e4872332b9826d92f11/invoke.js';
+      adRef.current.appendChild(script);
+    }
+
+    // Countdown timer
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onComplete]);
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-background">
+      <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+        Ad • {countdown}s
+      </div>
+      <div className="text-muted-foreground text-sm mb-4">Sponsored</div>
+      <div ref={adRef} className="flex-1 flex items-center justify-center">
+        <div id="container-0f7e60b368e48e4872332b9826d92f11"></div>
+      </div>
+      <button
+        onClick={onComplete}
+        className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium"
+      >
+        Skip Ad
+      </button>
+    </div>
+  );
+};
+
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: StoryViewerProps) => {
   const { user } = useAuth();
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [showAd, setShowAd] = useState(false);
+  const [storiesViewed, setStoriesViewed] = useState(0);
   const story = stories[currentIndex];
   const STORY_DURATION = 5000;
+  const AD_FREQUENCY = 3; // Show ad after every 3 stories
 
   useEffect(() => {
     if (story && user) {
@@ -39,6 +91,11 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
       fetchLikeCount();
     }
   }, [story?.id, user]);
+
+  useEffect(() => {
+    // Track stories viewed and show ad
+    setStoriesViewed(prev => prev + 1);
+  }, [currentIndex]);
 
   const checkIfLiked = async () => {
     if (!story || !user) return;
@@ -80,14 +137,28 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
     }
   };
 
+  const handleNext = () => {
+    // Check if we should show an ad
+    if (storiesViewed > 0 && storiesViewed % AD_FREQUENCY === 0 && !showAd) {
+      setShowAd(true);
+    } else {
+      onNext();
+    }
+  };
+
+  const handleAdComplete = () => {
+    setShowAd(false);
+    onNext();
+  };
+
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || showAd) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           if (currentIndex < stories.length - 1) {
-            onNext();
+            handleNext();
           } else {
             onClose();
           }
@@ -98,13 +169,22 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
     }, 100);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isPaused, onNext, onClose, stories.length]);
+  }, [currentIndex, isPaused, showAd, onClose, stories.length, storiesViewed]);
 
   useEffect(() => {
     setProgress(0);
   }, [currentIndex]);
 
   if (!story) return null;
+
+  // Show ad screen
+  if (showAd) {
+    return (
+      <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
+        <StoryAd onComplete={handleAdComplete} />
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
@@ -174,7 +254,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
           />
           <div
             className="flex-1 cursor-pointer"
-            onClick={onNext}
+            onClick={handleNext}
           />
         </div>
       </div>
@@ -207,7 +287,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
       )}
       {currentIndex < stories.length - 1 && (
         <button
-          onClick={onNext}
+          onClick={handleNext}
           className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
         >
           <ChevronRight className="h-6 w-6 text-foreground" />
