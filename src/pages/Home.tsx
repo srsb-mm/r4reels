@@ -6,6 +6,7 @@ import Layout from '@/components/Layout';
 import Post from '@/components/Post';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
+import AdBanner from '@/components/AdBanner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
@@ -212,13 +213,18 @@ const Home = () => {
 
         {/* Feed */}
         <div className="pb-20 md:pb-6">
-          {posts.map((post) => (
-            <Post
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-              onComment={handleComment}
-            />
+          {posts.map((post, index) => (
+            <div key={post.id}>
+              <Post
+                post={post}
+                onLike={handleLike}
+                onComment={handleComment}
+              />
+              {/* Show ad after every 3rd post */}
+              {(index + 1) % 3 === 0 && index < posts.length - 1 && (
+                <AdBanner type={index % 6 === 2 ? 'native' : 'banner'} />
+              )}
+            </div>
           ))}
         </div>
       </div>

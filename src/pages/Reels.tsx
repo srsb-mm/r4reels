@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Volume2, VolumeX } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import AdBanner from '@/components/AdBanner';
 
 const Reels = () => {
   const navigate = useNavigate();
@@ -158,78 +159,88 @@ const Reels = () => {
           const isLiked = reel.user_liked?.length > 0;
           const likeCount = reel.likes[0]?.count || 0;
           const commentCount = reel.comments[0]?.count || 0;
+          const actualIndex = index + Math.floor(index / 4); // Account for ad slots
 
           return (
-            <div
-              key={reel.id}
-              className="snap-start h-screen w-full relative flex items-center justify-center"
-            >
-              {/* Video */}
-              <video
-                ref={(el) => (videoRefs.current[index] = el)}
-                src={reel.image_url}
-                className="h-full w-full object-contain"
-                loop
-                muted={muted}
-                playsInline
-                onError={(e) => {
-                  console.error('Video load error:', e);
-                  console.error('Video URL:', reel.image_url);
-                }}
-              />
+            <>
+              <div
+                key={reel.id}
+                className="snap-start h-screen w-full relative flex items-center justify-center"
+              >
+                {/* Video */}
+                <video
+                  ref={(el) => (videoRefs.current[index] = el)}
+                  src={reel.image_url}
+                  className="h-full w-full object-contain"
+                  loop
+                  muted={muted}
+                  playsInline
+                  onError={(e) => {
+                    console.error('Video load error:', e);
+                    console.error('Video URL:', reel.image_url);
+                  }}
+                />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60">
-                {/* User Info */}
-                <div className="absolute bottom-20 left-4 right-20 text-white">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Avatar className="h-10 w-10 border-2 border-white cursor-pointer" onClick={() => navigate(`/user/${reel.profiles.username}`)}>
-                      <AvatarImage src={reel.profiles.avatar_url} />
-                      <AvatarFallback>{reel.profiles.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-semibold cursor-pointer" onClick={() => navigate(`/user/${reel.profiles.username}`)}>
-                      {reel.profiles.username}
-                    </span>
-                    {user?.id !== reel.user_id && (
-                      <Button size="sm" variant="outline" className="text-white border-white">
-                        Follow
-                      </Button>
-                    )}
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60">
+                  {/* User Info */}
+                  <div className="absolute bottom-20 left-4 right-20 text-white">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-10 w-10 border-2 border-white cursor-pointer" onClick={() => navigate(`/user/${reel.profiles.username}`)}>
+                        <AvatarImage src={reel.profiles.avatar_url} />
+                        <AvatarFallback>{reel.profiles.username[0].toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-semibold cursor-pointer" onClick={() => navigate(`/user/${reel.profiles.username}`)}>
+                        {reel.profiles.username}
+                      </span>
+                      {user?.id !== reel.user_id && (
+                        <Button size="sm" variant="outline" className="text-white border-white">
+                          Follow
+                        </Button>
+                      )}
+                    </div>
+                    {reel.caption && <p className="text-sm">{reel.caption}</p>}
+                    {reel.location && <p className="text-xs text-gray-300 mt-1">📍 {reel.location}</p>}
                   </div>
-                  {reel.caption && <p className="text-sm">{reel.caption}</p>}
-                  {reel.location && <p className="text-xs text-gray-300 mt-1">📍 {reel.location}</p>}
-                </div>
 
-                {/* Action Buttons */}
-                <div className="absolute bottom-20 right-4 flex flex-col items-center gap-6">
-                  <button onClick={() => handleLike(reel, index)} className="flex flex-col items-center">
-                    <Heart className={`h-7 w-7 text-white ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                    <span className="text-white text-xs mt-1">{likeCount}</span>
-                  </button>
-                  
-                  <button onClick={() => navigate(`/post/${reel.id}`)} className="flex flex-col items-center">
-                    <MessageCircle className="h-7 w-7 text-white" />
-                    <span className="text-white text-xs mt-1">{commentCount}</span>
-                  </button>
-                  
-                  <button onClick={() => handleShare(reel)} className="flex flex-col items-center">
-                    <Share2 className="h-7 w-7 text-white" />
-                  </button>
-                  
-                  <button className="flex flex-col items-center">
-                    <Bookmark className="h-7 w-7 text-white" />
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="absolute bottom-20 right-4 flex flex-col items-center gap-6">
+                    <button onClick={() => handleLike(reel, index)} className="flex flex-col items-center">
+                      <Heart className={`h-7 w-7 text-white ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                      <span className="text-white text-xs mt-1">{likeCount}</span>
+                    </button>
+                    
+                    <button onClick={() => navigate(`/post/${reel.id}`)} className="flex flex-col items-center">
+                      <MessageCircle className="h-7 w-7 text-white" />
+                      <span className="text-white text-xs mt-1">{commentCount}</span>
+                    </button>
+                    
+                    <button onClick={() => handleShare(reel)} className="flex flex-col items-center">
+                      <Share2 className="h-7 w-7 text-white" />
+                    </button>
+                    
+                    <button className="flex flex-col items-center">
+                      <Bookmark className="h-7 w-7 text-white" />
+                    </button>
 
-                  <button onClick={() => setMuted(!muted)} className="flex flex-col items-center">
-                    {muted ? <VolumeX className="h-7 w-7 text-white" /> : <Volume2 className="h-7 w-7 text-white" />}
-                  </button>
+                    <button onClick={() => setMuted(!muted)} className="flex flex-col items-center">
+                      {muted ? <VolumeX className="h-7 w-7 text-white" /> : <Volume2 className="h-7 w-7 text-white" />}
+                    </button>
 
-                  <button className="flex flex-col items-center">
-                    <MoreHorizontal className="h-7 w-7 text-white" />
-                  </button>
+                    <button className="flex flex-col items-center">
+                      <MoreHorizontal className="h-7 w-7 text-white" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+              
+              {/* Show ad after every 4th reel */}
+              {(index + 1) % 4 === 0 && index < reels.length - 1 && (
+                <div key={`ad-${index}`} className="snap-start h-screen w-full flex items-center justify-center bg-black">
+                  <AdBanner type={index % 8 === 3 ? 'native' : 'banner'} />
+                </div>
+              )}
+            </>
           );
         })}
       </div>
