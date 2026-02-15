@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Volume2, VolumeX } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Volume2, VolumeX, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/AdBanner';
 
@@ -13,7 +13,9 @@ const Reels = () => {
   const { user, loading } = useAuth();
   const [reels, setReels] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [followingMap, setFollowingMap] = useState<Set<string>>(new Set());
+  const [followLoading, setFollowLoading] = useState<string | null>(null);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   useEffect(() => {
@@ -25,8 +27,34 @@ const Reels = () => {
   useEffect(() => {
     if (user) {
       fetchReels();
+      fetchFollowing();
     }
   }, [user]);
+
+  const fetchFollowing = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id);
+    if (data) {
+      setFollowingMap(new Set(data.map(f => f.following_id)));
+    }
+  };
+
+  const handleFollow = async (userId: string) => {
+    if (!user || followLoading) return;
+    setFollowLoading(userId);
+    const isFollowing = followingMap.has(userId);
+    if (isFollowing) {
+      await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', userId);
+      setFollowingMap(prev => { const n = new Set(prev); n.delete(userId); return n; });
+    } else {
+      await supabase.from('follows').insert({ follower_id: user.id, following_id: userId });
+      setFollowingMap(prev => new Set(prev).add(userId));
+    }
+    setFollowLoading(null);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -175,6 +203,14 @@ const Reels = () => {
                   loop
                   muted={muted}
                   playsInline
+                  autoPlay={index === 0}
+                  onClick={() => {
+                    const video = videoRefs.current[index];
+                    if (video) {
+                      if (video.paused) video.play();
+                      else video.pause();
+                    }
+                  }}
                   onError={(e) => {
                     console.error('Video load error:', e);
                     console.error('Video URL:', reel.image_url);
@@ -194,8 +230,14 @@ const Reels = () => {
                         {reel.profiles.username}
                       </span>
                       {user?.id !== reel.user_id && (
-                        <Button size="sm" variant="outline" className="text-white border-white">
-                          Follow
+                        <Button 
+                          size="sm" 
+                          variant={followingMap.has(reel.user_id) ? "outline" : "default"}
+                          className={followingMap.has(reel.user_id) ? "text-white border-white" : ""}
+                          onClick={() => handleFollow(reel.user_id)}
+                          disabled={followLoading === reel.user_id}
+                        >
+                          {followingMap.has(reel.user_id) ? 'Following' : 'Follow'}
                         </Button>
                       )}
                     </div>

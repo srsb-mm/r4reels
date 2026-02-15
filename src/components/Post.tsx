@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PostProps {
   post: {
@@ -32,9 +34,41 @@ interface PostProps {
 
 const Post = ({ post, onLike, onComment }: PostProps) => {
   const navigate = useNavigate();
-  // Support both is_liked (from Home) and user_liked (from other places)
+  const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(post.is_liked || post.user_liked?.length > 0);
   const [likeCount, setLikeCount] = useState(post.likes_count || post.likes?.[0]?.count || 0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && post.user_id !== user.id) {
+      checkFollowStatus();
+    }
+  }, [user, post.user_id]);
+
+  const checkFollowStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', user.id)
+      .eq('following_id', post.user_id)
+      .maybeSingle();
+    setIsFollowing(!!data);
+  };
+
+  const handleFollow = async () => {
+    if (!user || followLoading) return;
+    setFollowLoading(true);
+    if (isFollowing) {
+      await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', post.user_id);
+      setIsFollowing(false);
+    } else {
+      await supabase.from('follows').insert({ follower_id: user.id, following_id: post.user_id });
+      setIsFollowing(true);
+    }
+    setFollowLoading(false);
+  };
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -73,9 +107,16 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
             </div>
             {post.location && <div className="text-sm text-muted-foreground">{post.location}</div>}
           </div>
-          <Button size="sm" variant="default">
-            Follow
-          </Button>
+          {user && post.user_id !== user.id && (
+            <Button 
+              size="sm" 
+              variant={isFollowing ? "outline" : "default"}
+              onClick={handleFollow}
+              disabled={followLoading}
+            >
+              {isFollowing ? 'Following' : 'Follow'}
+            </Button>
+          )}
         </div>
         <button>
           <MoreHorizontal className="h-6 w-6" />

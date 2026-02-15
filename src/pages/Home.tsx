@@ -86,14 +86,32 @@ const Home = () => {
   };
 
   const fetchStories = async () => {
+    // Get users the current user follows
+    const { data: following } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user?.id);
+
+    // Get users who follow the current user
+    const { data: followers } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('following_id', user?.id);
+
+    const connectedUserIds = new Set<string>();
+    following?.forEach(f => connectedUserIds.add(f.following_id));
+    followers?.forEach(f => connectedUserIds.add(f.follower_id));
+    // Include own user id to see own stories
+    if (user?.id) connectedUserIds.add(user.id);
+
     const { data, error } = await supabase
       .from('stories')
       .select('*, profiles:user_id (id, username, avatar_url)')
       .gt('expires_at', new Date().toISOString())
+      .in('user_id', Array.from(connectedUserIds))
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // Group stories by user
       const storiesGrouped = data.reduce((acc: any, story: any) => {
         const userId = story.profiles.id;
         if (!acc[userId]) {
