@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, PlusSquare, Heart, MessageCircle, User, Film } from 'lucide-react';
 import logo from '@/assets/r4-logo.png';
+import NotificationDropdown from '@/components/NotificationDropdown';
 
 interface LayoutProps {
   children: ReactNode;
@@ -28,13 +29,16 @@ const Layout = ({ children }: LayoutProps) => {
             <img src={logo} alt="R4 Reels" className="h-8 w-8" />
             <span className="text-xl font-semibold">R4 Reels</span>
           </Link>
-          {/* Mobile Message Button */}
-          <Link
-            to="/messages"
-            className="md:hidden flex items-center transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <MessageCircle className="h-6 w-6" />
-          </Link>
+          {/* Mobile Icons */}
+          <div className="md:hidden flex items-center gap-4">
+            <NotificationDropdown />
+            <Link
+              to="/messages"
+              className="flex items-center transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Link>
+          </div>
           <nav className="hidden md:flex items-center gap-6">
             {navItems.slice(0, -1).map((item) => (
               <Link
@@ -49,6 +53,7 @@ const Layout = ({ children }: LayoutProps) => {
                 <item.icon className="h-6 w-6" />
               </Link>
             ))}
+            <NotificationDropdown />
             <Link
               to="/messages"
               className={`flex items-center gap-2 transition-colors ${
