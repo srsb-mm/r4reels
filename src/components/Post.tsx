@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface PostProps {
   post: {
@@ -35,6 +36,7 @@ interface PostProps {
 const Post = ({ post, onLike, onComment }: PostProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { createNotification, removeNotification } = useNotifications();
   const [isLiked, setIsLiked] = useState(post.is_liked || post.user_liked?.length > 0);
   const [likeCount, setLikeCount] = useState(post.likes_count || post.likes?.[0]?.count || 0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -63,14 +65,21 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
     if (isFollowing) {
       await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', post.user_id);
       setIsFollowing(false);
+      removeNotification(post.user_id, 'follow');
     } else {
       await supabase.from('follows').insert({ follower_id: user.id, following_id: post.user_id });
       setIsFollowing(true);
+      createNotification(post.user_id, 'follow');
     }
     setFollowLoading(false);
   };
 
   const handleLike = () => {
+    if (!isLiked) {
+      createNotification(post.user_id, 'like', post.id);
+    } else {
+      removeNotification(post.user_id, 'like', post.id);
+    }
     setIsLiked(!isLiked);
     setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
     onLike(post.id);

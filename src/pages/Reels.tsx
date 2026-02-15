@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Volume2, VolumeX, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/AdBanner';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const Reels = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Reels = () => {
   const [muted, setMuted] = useState(true);
   const [followingMap, setFollowingMap] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<string | null>(null);
+  const { createNotification, removeNotification } = useNotifications();
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   useEffect(() => {
@@ -49,9 +51,11 @@ const Reels = () => {
     if (isFollowing) {
       await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', userId);
       setFollowingMap(prev => { const n = new Set(prev); n.delete(userId); return n; });
+      removeNotification(userId, 'follow');
     } else {
       await supabase.from('follows').insert({ follower_id: user.id, following_id: userId });
       setFollowingMap(prev => new Set(prev).add(userId));
+      createNotification(userId, 'follow');
     }
     setFollowLoading(null);
   };
@@ -138,15 +142,11 @@ const Reels = () => {
     const isLiked = reel.user_liked?.length > 0;
 
     if (isLiked) {
-      await supabase
-        .from('likes')
-        .delete()
-        .eq('post_id', reel.id)
-        .eq('user_id', user.id);
+      await supabase.from('likes').delete().eq('post_id', reel.id).eq('user_id', user.id);
+      removeNotification(reel.user_id, 'like', reel.id);
     } else {
-      await supabase
-        .from('likes')
-        .insert({ post_id: reel.id, user_id: user.id });
+      await supabase.from('likes').insert({ post_id: reel.id, user_id: user.id });
+      createNotification(reel.user_id, 'like', reel.id);
     }
 
     fetchReels();
