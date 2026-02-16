@@ -7,6 +7,7 @@ import Post from '@/components/Post';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
 import AdBanner from '@/components/AdBanner';
+import StoryUploadDialog from '@/components/StoryUploadDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
@@ -23,6 +24,7 @@ const Home = () => {
   const [currentStoryUser, setCurrentStoryUser] = useState<any>(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [userStories, setUserStories] = useState<any[]>([]);
+  const [showStoryUpload, setShowStoryUpload] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -197,7 +199,7 @@ const Home = () => {
             <div className="flex gap-4 pb-2">
               {/* Your Story */}
               <button
-                onClick={() => navigate('/create')}
+                onClick={() => setShowStoryUpload(true)}
                 className="flex flex-col items-center gap-1 min-w-[80px]"
               >
                 <div className="relative">
@@ -257,6 +259,12 @@ const Home = () => {
           onPrevious={handlePreviousStory}
         />
       )}
+
+      <StoryUploadDialog
+        open={showStoryUpload}
+        onOpenChange={setShowStoryUpload}
+        onUploaded={fetchStories}
+      />
     </Layout>
   );
 };

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import Layout from '@/components/Layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { createNotification, removeNotification } = useNotifications();
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -136,6 +138,10 @@ const PostDetail = () => {
     if (!error) {
       setNewComment('');
       fetchComments();
+      // Send comment notification to post owner
+      if (post && post.user_id !== user.id) {
+        createNotification(post.user_id, 'comment', id);
+      }
       toast({ title: 'Comment added' });
     }
   };
