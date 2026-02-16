@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 interface Story {
   id: string;
@@ -259,23 +261,6 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
         </div>
       </div>
 
-      {/* Like Button */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-        <button
-          onClick={handleLike}
-          className="p-3 rounded-full bg-muted/50 hover:bg-muted transition-colors"
-        >
-          <Heart
-            className={`h-8 w-8 transition-colors ${
-              isLiked ? 'fill-red-500 text-red-500' : 'text-foreground'
-            }`}
-          />
-        </button>
-        {likeCount > 0 && (
-          <span className="text-sm text-foreground font-medium">{likeCount}</span>
-        )}
-      </div>
-
       {/* Navigation Buttons */}
       {currentIndex > 0 && (
         <button
@@ -293,6 +278,55 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
           <ChevronRight className="h-6 w-6 text-foreground" />
         </button>
       )}
+
+      {/* Reply & Like Bar */}
+      <StoryReplyBar storyUserId={story.user.id} />
+    </div>
+  );
+};
+
+const StoryReplyBar = ({ storyUserId }: { storyUserId: string }) => {
+  const { user } = useAuth();
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const handleReply = async () => {
+    if (!replyText.trim() || !user || sending) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: storyUserId,
+        text: replyText.trim(),
+      });
+      if (error) throw error;
+      toast({ title: 'Reply sent!' });
+      setReplyText('');
+    } catch {
+      toast({ title: 'Failed to send reply', variant: 'destructive' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (user?.id === storyUserId) return null;
+
+  return (
+    <div className="absolute bottom-6 left-4 right-4 flex items-center gap-2">
+      <Input
+        placeholder="Send message..."
+        value={replyText}
+        onChange={(e) => setReplyText(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleReply()}
+        className="flex-1 bg-muted/30 border-muted text-foreground placeholder:text-muted-foreground rounded-full h-10"
+      />
+      <button
+        onClick={handleReply}
+        disabled={!replyText.trim() || sending}
+        className="p-2 rounded-full bg-primary text-primary-foreground disabled:opacity-50"
+      >
+        <Send className="h-5 w-5" />
+      </button>
     </div>
   );
 };

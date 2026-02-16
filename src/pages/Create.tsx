@@ -20,7 +20,7 @@ const Create = () => {
   const [caption, setCaption] = useState('');
   const [location, setLocation] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [postType, setPostType] = useState<'post' | 'reel' | 'story'>('post');
+  const [postType, setPostType] = useState<'post' | 'reel'>('post');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,7 +28,7 @@ const Create = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'post' | 'reel' | 'story') => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'post' | 'reel') => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
@@ -48,27 +48,7 @@ const Create = () => {
     setUploading(true);
 
     try {
-      if (postType === 'story') {
-        // Upload story
-        const bucket = 'stories';
-        const filePath = `${user.id}/${Date.now()}-${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
-
-        const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
-        const { error: insertError } = await supabase.from('stories').insert({
-          user_id: user.id,
-          media_url: publicUrl,
-          media_type: mediaType,
-        });
-
-        if (insertError) throw insertError;
-      } else {
+      {
         // Upload post/reel
         const bucket = 'posts';
         const filePath = `${user.id}/${Date.now()}-${file.name}`;
@@ -93,7 +73,7 @@ const Create = () => {
 
       toast({
         title: 'Success',
-        description: `${postType === 'post' ? 'Post' : postType === 'reel' ? 'Reel' : 'Story'} created successfully!`,
+        description: `${postType === 'post' ? 'Post' : 'Reel'} created successfully!`,
       });
 
       navigate('/');
@@ -119,8 +99,8 @@ const Create = () => {
             <CardDescription>Share a {postType === 'post' ? 'photo' : postType === 'reel' ? 'video' : 'story'} with your followers</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="post" className="w-full" onValueChange={(v) => setPostType(v as 'post' | 'reel' | 'story')}>
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+            <Tabs defaultValue="post" className="w-full" onValueChange={(v) => setPostType(v as 'post' | 'reel')}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="post" className="flex items-center gap-2">
                   <ImageIcon className="h-4 w-4" />
                   Post
@@ -129,18 +109,14 @@ const Create = () => {
                   <Video className="h-4 w-4" />
                   Reel
                 </TabsTrigger>
-                <TabsTrigger value="story" className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Story
-                </TabsTrigger>
               </TabsList>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <Label htmlFor="file">{postType === 'post' ? 'Image' : postType === 'reel' ? 'Video' : 'Image/Video'}</Label>
+                  <Label htmlFor="file">{postType === 'post' ? 'Image' : 'Video'}</Label>
                   {preview ? (
                     <div className="mt-2">
-                      {postType === 'post' || (postType === 'story' && file?.type.startsWith('image/')) ? (
+                      {postType === 'post' ? (
                         <img
                           src={preview}
                           alt="Preview"
@@ -162,14 +138,14 @@ const Create = () => {
                         }}
                         className="mt-2"
                       >
-                        Change {postType === 'post' ? 'Image' : postType === 'reel' ? 'Video' : 'Media'}
+                        Change {postType === 'post' ? 'Image' : 'Video'}
                       </Button>
                     </div>
                   ) : (
                     <Input
                       id="file"
                       type="file"
-                      accept={postType === 'post' ? 'image/*' : postType === 'reel' ? 'video/*' : 'image/*,video/*'}
+                      accept={postType === 'post' ? 'image/*' : 'video/*'}
                       onChange={(e) => handleFileChange(e, postType)}
                       required
                       className="mt-2"
@@ -177,7 +153,7 @@ const Create = () => {
                   )}
                 </div>
 
-                {postType !== 'story' && (
+                {(
                   <>
                     <div>
                       <Label htmlFor="caption">Caption</Label>
