@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Volume2, VolumeX, Play } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/AdBanner';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -14,11 +14,11 @@ const Reels = () => {
   const { user, loading } = useAuth();
   const [reels, setReels] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [muted, setMuted] = useState(true);
+  
   const [followingMap, setFollowingMap] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<string | null>(null);
   const { createNotification, removeNotification } = useNotifications();
-  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
+  
 
   useEffect(() => {
     if (!loading && !user) {
@@ -75,19 +75,6 @@ const Reels = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [currentIndex, reels.length]);
 
-  useEffect(() => {
-    Object.keys(videoRefs.current).forEach((key) => {
-      const index = parseInt(key);
-      const video = videoRefs.current[index];
-      if (video) {
-        if (index === currentIndex) {
-          video.play();
-        } else {
-          video.pause();
-        }
-      }
-    });
-  }, [currentIndex]);
 
   const fetchReels = async () => {
     const { data: reelsData } = await supabase
@@ -195,26 +182,12 @@ const Reels = () => {
                 key={reel.id}
                 className="snap-start h-screen w-full relative flex items-center justify-center"
               >
-                {/* Video */}
-                <video
-                  ref={(el) => (videoRefs.current[index] = el)}
+                {/* Media - show as image since picsum URLs are images */}
+                <img
                   src={reel.image_url}
-                  className="h-full w-full object-contain"
-                  loop
-                  muted={muted}
-                  playsInline
-                  autoPlay={index === 0}
-                  onClick={() => {
-                    const video = videoRefs.current[index];
-                    if (video) {
-                      if (video.paused) video.play();
-                      else video.pause();
-                    }
-                  }}
-                  onError={(e) => {
-                    console.error('Video load error:', e);
-                    console.error('Video URL:', reel.image_url);
-                  }}
+                  alt={reel.caption || 'Reel'}
+                  className="h-full w-full object-cover"
+                  loading={index < 3 ? 'eager' : 'lazy'}
                 />
 
                 {/* Overlay */}
@@ -265,9 +238,6 @@ const Reels = () => {
                       <Bookmark className="h-7 w-7 text-white" />
                     </button>
 
-                    <button onClick={() => setMuted(!muted)} className="flex flex-col items-center">
-                      {muted ? <VolumeX className="h-7 w-7 text-white" /> : <Volume2 className="h-7 w-7 text-white" />}
-                    </button>
 
                     <button className="flex flex-col items-center">
                       <MoreHorizontal className="h-7 w-7 text-white" />
