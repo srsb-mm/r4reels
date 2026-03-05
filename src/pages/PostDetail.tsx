@@ -148,11 +148,20 @@ const PostDetail = () => {
 
   const handleShare = async () => {
     const url = window.location.href;
-    if (navigator.share) {
-      await navigator.share({ url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast({ title: 'Link copied to clipboard' });
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied to clipboard' });
+      }
+    } catch (error) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied to clipboard' });
+      } catch {
+        toast({ title: 'Share link: ' + url });
+      }
     }
   };
 

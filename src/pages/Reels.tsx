@@ -151,8 +151,12 @@ const Reels = () => {
         toast({ title: 'Link copied to clipboard' });
       }
     } catch (error) {
-      await navigator.clipboard.writeText(url);
-      toast({ title: 'Link copied to clipboard' });
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied to clipboard' });
+      } catch {
+        toast({ title: 'Share link: ' + url });
+      }
     }
   };
 
