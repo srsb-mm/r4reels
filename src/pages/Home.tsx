@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import CommentDialog from '@/components/CommentDialog';
 
 const Home = () => {
   const { user, loading } = useAuth();
@@ -25,6 +26,8 @@ const Home = () => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [userStories, setUserStories] = useState<any[]>([]);
   const [showStoryUpload, setShowStoryUpload] = useState(false);
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentPostOwnerId, setCommentPostOwnerId] = useState<string>('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -141,7 +144,9 @@ const Home = () => {
   };
 
   const handleComment = (postId: string) => {
-    navigate(`/post/${postId}`);
+    const post = posts.find(p => p.id === postId);
+    setCommentPostId(postId);
+    setCommentPostOwnerId(post?.user_id || '');
   };
 
   const handleStoryClick = (storyGroup: any, index: number) => {
@@ -265,6 +270,15 @@ const Home = () => {
         onOpenChange={setShowStoryUpload}
         onUploaded={fetchStories}
       />
+
+      {commentPostId && (
+        <CommentDialog
+          postId={commentPostId}
+          postOwnerId={commentPostOwnerId}
+          isOpen={!!commentPostId}
+          onClose={() => { setCommentPostId(null); fetchPosts(); }}
+        />
+      )}
     </Layout>
   );
 };

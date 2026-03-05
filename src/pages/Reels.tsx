@@ -8,6 +8,7 @@ import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-r
 import { toast } from '@/hooks/use-toast';
 import AdBanner from '@/components/AdBanner';
 import { useNotifications } from '@/hooks/useNotifications';
+import CommentDialog from '@/components/CommentDialog';
 
 const Reels = () => {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ const Reels = () => {
   const [followingMap, setFollowingMap] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<string | null>(null);
   const { createNotification, removeNotification } = useNotifications();
-  
+  const [commentReelId, setCommentReelId] = useState<string | null>(null);
+  const [commentReelOwnerId, setCommentReelOwnerId] = useState<string>('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -225,7 +227,7 @@ const Reels = () => {
                       <span className="text-white text-xs mt-1">{likeCount}</span>
                     </button>
                     
-                    <button onClick={() => navigate(`/post/${reel.id}`)} className="flex flex-col items-center">
+                    <button onClick={() => { setCommentReelId(reel.id); setCommentReelOwnerId(reel.user_id); }} className="flex flex-col items-center">
                       <MessageCircle className="h-7 w-7 text-white" />
                       <span className="text-white text-xs mt-1">{commentCount}</span>
                     </button>
@@ -256,6 +258,15 @@ const Reels = () => {
           );
         })}
       </div>
+
+      {commentReelId && (
+        <CommentDialog
+          postId={commentReelId}
+          postOwnerId={commentReelOwnerId}
+          isOpen={!!commentReelId}
+          onClose={() => { setCommentReelId(null); fetchReels(); }}
+        />
+      )}
     </div>
   );
 };
