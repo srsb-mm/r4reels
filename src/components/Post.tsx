@@ -87,15 +87,20 @@ const Post = ({ post, onLike, onComment }: PostProps) => {
 
   const handleShare = async () => {
     const url = `${window.location.origin}/post/${post.id}`;
-    if (navigator.share) {
-      try {
+    try {
+      if (navigator.share) {
         await navigator.share({ url });
-      } catch (error) {
-        console.error('Error sharing:', error);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied to clipboard' });
       }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast({ title: 'Link copied to clipboard' });
+    } catch (error) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied to clipboard' });
+      } catch {
+        toast({ title: 'Share link: ' + url });
+      }
     }
   };
 
