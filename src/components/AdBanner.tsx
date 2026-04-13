@@ -1,55 +1,31 @@
 import { useEffect, useRef } from 'react';
 
-interface AdBannerProps {
-  type: 'native' | 'banner';
-}
-
-const AdBanner = ({ type }: AdBannerProps) => {
+const AdBanner = () => {
   const adRef = useRef<HTMLDivElement>(null);
-  const scriptLoaded = useRef(false);
+  const adLoaded = useRef(false);
 
   useEffect(() => {
-    if (scriptLoaded.current || !adRef.current) return;
-    scriptLoaded.current = true;
+    if (adLoaded.current || !adRef.current) return;
+    adLoaded.current = true;
 
-    if (type === 'native') {
-      // Native banner ad
-      const script = document.createElement('script');
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      script.src = '//pl28214886.effectivegatecpm.com/0f7e60b368e48e4872332b9826d92f11/invoke.js';
-      adRef.current.appendChild(script);
-    } else {
-      // Banner ad (300x250)
-      const optionsScript = document.createElement('script');
-      optionsScript.type = 'text/javascript';
-      optionsScript.innerHTML = `
-        atOptions = {
-          'key' : 'c21ddd93ffc5f735e68de3c601a18fbc',
-          'format' : 'iframe',
-          'height' : 250,
-          'width' : 300,
-          'params' : {}
-        };
-      `;
-      adRef.current.appendChild(optionsScript);
-
-      const invokeScript = document.createElement('script');
-      invokeScript.type = 'text/javascript';
-      invokeScript.src = '//www.highperformanceformat.com/c21ddd93ffc5f735e68de3c601a18fbc/invoke.js';
-      adRef.current.appendChild(invokeScript);
+    try {
+      const adsbygoogle = (window as any).adsbygoogle || [];
+      adsbygoogle.push({});
+    } catch (e) {
+      console.error('AdSense error:', e);
     }
-  }, [type]);
+  }, []);
 
   return (
     <div className="flex justify-center items-center py-4 bg-card rounded-lg my-4">
-      {type === 'native' ? (
-        <div ref={adRef}>
-          <div id="container-0f7e60b368e48e4872332b9826d92f11"></div>
-        </div>
-      ) : (
-        <div ref={adRef} className="flex justify-center"></div>
-      )}
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client="ca-pub-1476688498273602"
+        data-ad-slot="auto"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
     </div>
   );
 };
