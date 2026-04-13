@@ -28,20 +28,16 @@ interface StoryViewerProps {
 
 // Ad component for stories
 const StoryAd = ({ onComplete }: { onComplete: () => void }) => {
-  const adRef = useRef<HTMLDivElement>(null);
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // Load native ad
-    if (adRef.current) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      script.src = '//pl28214886.effectivegatecpm.com/0f7e60b368e48e4872332b9826d92f11/invoke.js';
-      adRef.current.appendChild(script);
+    try {
+      const adsbygoogle = (window as any).adsbygoogle || [];
+      adsbygoogle.push({});
+    } catch (e) {
+      console.error('AdSense error:', e);
     }
 
-    // Countdown timer
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -62,8 +58,15 @@ const StoryAd = ({ onComplete }: { onComplete: () => void }) => {
         Ad • {countdown}s
       </div>
       <div className="text-muted-foreground text-sm mb-4">Sponsored</div>
-      <div ref={adRef} className="flex-1 flex items-center justify-center">
-        <div id="container-0f7e60b368e48e4872332b9826d92f11"></div>
+      <div className="flex-1 flex items-center justify-center w-full">
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block', width: '100%', height: '300px' }}
+          data-ad-client="ca-pub-1476688498273602"
+          data-ad-slot="auto"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
       </div>
       <button
         onClick={onComplete}
