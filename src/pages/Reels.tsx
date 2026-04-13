@@ -252,10 +252,10 @@ const Reels = () => {
                 </div>
               </div>
               
-              {/* Show ad after every 4th reel */}
-              {(index + 1) % 4 === 0 && index < reels.length - 1 && (
+              {/* Show ad after every 3rd reel */}
+              {(index + 1) % 3 === 0 && index < reels.length - 1 && (
                 <div key={`ad-${index}`} className="snap-start h-screen w-full flex items-center justify-center bg-black">
-                  <AdBanner type={index % 8 === 3 ? 'native' : 'banner'} />
+                  <AdBanner />
                 </div>
               )}
             </>

@@ -245,9 +245,9 @@ const Home = () => {
                 onLike={handleLike}
                 onComment={handleComment}
               />
-              {/* Show ad after every 3rd post */}
-              {(index + 1) % 3 === 0 && index < posts.length - 1 && (
-                <AdBanner type={index % 6 === 2 ? 'native' : 'banner'} />
+              {/* Show ad after every 2nd post */}
+              {(index + 1) % 2 === 0 && index < posts.length - 1 && (
+                <AdBanner />
               )}
             </div>
           ))}
