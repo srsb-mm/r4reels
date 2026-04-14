@@ -110,6 +110,9 @@ const Auth = () => {
               required
             />
           </div>
+          <div className="my-4">
+            <AdBanner />
+          </div>
           <Button type="submit" className="w-full">
             {isSignUp ? 'Sign Up' : 'Log In'}
           </Button>
@@ -126,9 +129,6 @@ const Auth = () => {
           </button>
         </div>
       </Card>
-      <div className="w-full max-w-md mt-4">
-        <AdBanner />
-      </div>
     </div>
   );
 };
