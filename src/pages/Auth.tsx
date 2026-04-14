@@ -126,6 +126,9 @@ const Auth = () => {
           </button>
         </div>
       </Card>
+      <div className="w-full max-w-md mt-4">
+        <AdBanner />
+      </div>
     </div>
   );
 };
