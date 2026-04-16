@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import AdBanner from '@/components/AdBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -109,9 +108,6 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </div>
-          <div className="my-4">
-            <AdBanner />
           </div>
           <Button type="submit" className="w-full">
             {isSignUp ? 'Sign Up' : 'Log In'}
