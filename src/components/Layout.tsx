@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, PlusSquare, Heart, MessageCircle, User, Film } from 'lucide-react';
 import logo from '@/assets/r4-logo.png';
 import NotificationDropdown from '@/components/NotificationDropdown';
+import Footer from '@/components/Footer';
 
 interface LayoutProps {
   children: ReactNode;
@@ -80,6 +81,9 @@ const Layout = ({ children }: LayoutProps) => {
 
       {/* Main Content */}
       <main className="container py-6">{children}</main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Bottom Navigation (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
