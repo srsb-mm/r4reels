@@ -1,33 +1,15 @@
-import { useEffect, useRef } from 'react';
+// AdSense ads temporarily disabled to comply with Google AdSense policy:
+// "Google-served ads on screens without publisher-content"
+//
+// Ads will be re-enabled after the site has sufficient publisher content
+// (About, Privacy Policy, Terms of Service, blog posts, etc.) and the
+// site has been re-reviewed and approved by Google AdSense.
+//
+// To re-enable: restore the previous implementation that pushed
+// adsbygoogle and rendered the <ins class="adsbygoogle"> element.
 
 const AdBanner = () => {
-  const adRef = useRef<HTMLDivElement>(null);
-  const adLoaded = useRef(false);
-
-  useEffect(() => {
-    if (adLoaded.current || !adRef.current) return;
-    adLoaded.current = true;
-
-    try {
-      const adsbygoogle = (window as any).adsbygoogle || [];
-      adsbygoogle.push({});
-    } catch (e) {
-      console.error('AdSense error:', e);
-    }
-  }, []);
-
-  return (
-    <div className="flex justify-center items-center py-4 bg-card rounded-lg my-4">
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block' }}
-        data-ad-client="ca-pub-1476688498273602"
-        data-ad-slot="auto"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
-    </div>
-  );
+  return null;
 };
 
 export default AdBanner;
