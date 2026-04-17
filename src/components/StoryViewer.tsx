@@ -26,56 +26,14 @@ interface StoryViewerProps {
   onPrevious: () => void;
 }
 
-// Ad component for stories
+// Ad component for stories — temporarily disabled to comply with
+// Google AdSense policy (no ads on screens without publisher content).
+// Auto-completes immediately so the story flow is not interrupted.
 const StoryAd = ({ onComplete }: { onComplete: () => void }) => {
-  const [countdown, setCountdown] = useState(5);
-
   useEffect(() => {
-    try {
-      const adsbygoogle = (window as any).adsbygoogle || [];
-      adsbygoogle.push({});
-    } catch (e) {
-      console.error('AdSense error:', e);
-    }
-
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          onComplete();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
+    onComplete();
   }, [onComplete]);
-
-  return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-background">
-      <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-        Ad • {countdown}s
-      </div>
-      <div className="text-muted-foreground text-sm mb-4">Sponsored</div>
-      <div className="flex-1 flex items-center justify-center w-full">
-        <ins
-          className="adsbygoogle"
-          style={{ display: 'block', width: '100%', height: '300px' }}
-          data-ad-client="ca-pub-1476688498273602"
-          data-ad-slot="auto"
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
-      </div>
-      <button
-        onClick={onComplete}
-        className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium"
-      >
-        Skip Ad
-      </button>
-    </div>
-  );
+  return null;
 };
 
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: StoryViewerProps) => {
@@ -143,8 +101,8 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
   };
 
   const handleNext = () => {
-    // Check if we should show an ad
-    if (storiesViewed > 0 && storiesViewed % AD_FREQUENCY === 0 && !showAd) {
+    // Ads disabled for AdSense policy compliance — always go to next story
+    if (false && storiesViewed > 0 && storiesViewed % AD_FREQUENCY === 0 && !showAd) {
       setShowAd(true);
     } else {
       onNext();
