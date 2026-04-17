@@ -1,15 +1,46 @@
-// AdSense ads temporarily disabled to comply with Google AdSense policy:
-// "Google-served ads on screens without publisher-content"
-//
-// Ads will be re-enabled after the site has sufficient publisher content
-// (About, Privacy Policy, Terms of Service, blog posts, etc.) and the
-// site has been re-reviewed and approved by Google AdSense.
-//
-// To re-enable: restore the previous implementation that pushed
-// adsbygoogle and rendered the <ins class="adsbygoogle"> element.
+import { useEffect, useRef } from 'react';
 
-const AdBanner = () => {
-  return null;
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
+interface AdBannerProps {
+  slot?: string;
+  format?: string;
+  className?: string;
+}
+
+const AdBanner = ({ slot = 'auto', format = 'auto', className = '' }: AdBannerProps) => {
+  const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    try {
+      if (typeof window !== 'undefined' && window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      }
+    } catch (e) {
+      // Silently fail — AdSense may not be loaded yet
+    }
+  }, []);
+
+  return (
+    <div className={`w-full my-4 flex justify-center ${className}`}>
+      <ins
+        ref={insRef}
+        className="adsbygoogle"
+        style={{ display: 'block', width: '100%', minHeight: '90px' }}
+        data-ad-client="ca-pub-1476688498273602"
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive="true"
+      />
+    </div>
+  );
 };
 
 export default AdBanner;

@@ -26,14 +26,43 @@ interface StoryViewerProps {
   onPrevious: () => void;
 }
 
-// Ad component for stories — temporarily disabled to comply with
-// Google AdSense policy (no ads on screens without publisher content).
-// Auto-completes immediately so the story flow is not interrupted.
+// Ad component for stories — shows AdSense ad between stories
 const StoryAd = ({ onComplete }: { onComplete: () => void }) => {
+  const pushed = useRef(false);
+
   useEffect(() => {
-    onComplete();
+    if (pushed.current) return;
+    try {
+      if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        pushed.current = true;
+      }
+    } catch (e) {
+      // Silently fail
+    }
+    const timer = setTimeout(onComplete, 5000);
+    return () => clearTimeout(timer);
   }, [onComplete]);
-  return null;
+
+  return (
+    <div className="w-full max-w-md mx-auto p-4 flex flex-col items-center justify-center text-foreground">
+      <p className="text-xs text-muted-foreground mb-2">Sponsored</p>
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block', width: '100%', minHeight: '250px' }}
+        data-ad-client="ca-pub-1476688498273602"
+        data-ad-slot="auto"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+      <button
+        onClick={onComplete}
+        className="mt-4 text-sm text-muted-foreground underline"
+      >
+        Skip ad
+      </button>
+    </div>
+  );
 };
 
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: StoryViewerProps) => {
@@ -101,8 +130,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrevious }: Sto
   };
 
   const handleNext = () => {
-    // Ads disabled for AdSense policy compliance — always go to next story
-    if (false && storiesViewed > 0 && storiesViewed % AD_FREQUENCY === 0 && !showAd) {
+    if (storiesViewed > 0 && storiesViewed % AD_FREQUENCY === 0 && !showAd) {
       setShowAd(true);
     } else {
       onNext();
